@@ -46,11 +46,21 @@ pipeline {
                 }
             }
         }
+
+        stage('Snyk Dependency Scan') {
+            steps {
+                withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) {
+                    sh '''
+                        snyk test --severity-threshold=high
+                    '''
+                }
+            }
+        }
     }
 
     post {
         success {
-            echo 'TechCart CI stages completed successfully.'
+            echo 'TechCart CI and security stages completed successfully.'
         }
 
         failure {
