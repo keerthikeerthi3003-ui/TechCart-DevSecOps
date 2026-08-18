@@ -49,11 +49,24 @@ pipeline {
 
         stage('Snyk Dependency Scan') {
             steps {
-                withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) {
+                withCredentials([
+                    string(
+                        credentialsId: 'snyk-token',
+                        variable: 'SNYK_TOKEN'
+                    )
+                ]) {
                     sh '''
                         snyk test --severity-threshold=high
                     '''
                 }
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh '''
+                    docker build -t techcart:${BUILD_NUMBER} .
+                '''
             }
         }
     }
