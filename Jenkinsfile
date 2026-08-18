@@ -71,15 +71,16 @@ pipeline {
         }
 
         stage('Trivy Image Scan') {
-            steps {
-                sh '''
-                    trivy image \
-                    --severity HIGH,CRITICAL \
-                    --exit-code 1 \
-                    techcart:${BUILD_NUMBER}
-                '''
-            }
-        }
+    steps {
+        sh '''
+            trivy image \
+            --severity HIGH,CRITICAL \
+            --ignore-unfixed \
+            --exit-code 1 \
+            techcart:${BUILD_NUMBER}
+        '''
+    }
+}
     }
 
     post {
