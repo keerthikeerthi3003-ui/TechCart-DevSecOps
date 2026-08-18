@@ -71,21 +71,56 @@ pipeline {
         }
 
         stage('Trivy Image Scan') {
-    steps {
-        sh '''
-            trivy image \
-            --severity HIGH,CRITICAL \
-            --ignore-unfixed \
-            --exit-code 1 \
-            techcart:${BUILD_NUMBER}
-        '''
-    }
-}
+            steps {
+                sh '''
+                    trivy image \
+                    --severity HIGH,CRITICAL \
+                    --ignore-unfixed \
+                    --exit-code 1 \
+                    techcart:${BUILD_NUMBER}
+                '''
+            }
+        }
+
+        stage('Push Image to ACR') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'acr-service-principal',
+                        usernameVariable: 'AZURE_CLIENT_ID',
+                        passwordVariable: 'AZURE_CLIENT_SECRET'
+                    ),
+                    string(
+                        credentialsId: 'azure-tenant-id',
+                        variable: 'AZURE_TENANT_ID'
+                    )
+                ]) {
+                    sh '''
+                        az login \
+                          --service-principal \
+                          --username "$AZURE_CLIENT_ID" \
+                          --password "$AZURE_CLIENT_SECRET" \
+                          --tenant "$AZURE_TENANT_ID"
+
+                        az acr login --name acrtechcartkeerthi
+
+                        docker tag \
+                          techcart:${BUILD_NUMBER} \
+                          acrtechcartkeerthi.azurecr.io/techcart:${BUILD_NUMBER}
+
+                        docker push \
+                          acrtechcartkeerthi.azurecr.io/techcart:${BUILD_NUMBER}
+
+                        az logout
+                    '''
+                }
+            }
+        }
     }
 
     post {
         success {
-            echo 'TechCart CI and security stages completed successfully.'
+            echo 'TechCart CI, security, Docker, and ACR stages completed successfully.'
         }
 
         failure {
