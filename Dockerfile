@@ -6,7 +6,10 @@ COPY package*.json ./
 
 RUN npm ci --omit=dev
 
-COPY . .
+COPY app.js ./
+COPY public ./public
+
+USER node
 
 EXPOSE 3000
 
