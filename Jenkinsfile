@@ -264,7 +264,7 @@ EOF
 
                     if [ -n "$EXTERNAL_IP" ]; then
                         curl --fail --retry 5 --retry-delay 10 \
-                          http://${EXTERNAL_IP}/api/health
+                          http://${EXTERNAL_IP}/health
                     else
                         echo "External IP is not available yet."
                         exit 1
